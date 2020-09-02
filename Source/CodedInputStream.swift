@@ -115,7 +115,7 @@ public class CodedInputStream {
         }
         
         if (size <= bufferSize - bufferPos) {
-            let data = Data(bytes: &buffer + bufferPos, count: size)
+            let data = Data(bytes: UnsafeMutablePointer(&buffer + bufferPos), count: size)
             bufferPos += size
             return data
         } else if (size < BUFFER_SIZE) {
@@ -123,19 +123,19 @@ public class CodedInputStream {
             var bytes = [UInt8](repeating: 0, count: size)
             var pos = bufferSize - bufferPos
 //            let byPointer = UnsafeMutablePointerUInt8From(data: bytes)
-            memcpy(&bytes, &buffer + bufferPos, pos)
+            memcpy(&bytes, UnsafeMutablePointer(&buffer + bufferPos), pos)
             bufferPos = bufferSize
             
             _ = try refillBuffer(mustSucceed: true)
             
             while size - pos > bufferSize {
-                memcpy(&bytes + pos, &buffer, bufferSize)
+                memcpy(UnsafeMutablePointer(&bytes + pos), &buffer, bufferSize)
                 pos += bufferSize
                 bufferPos = bufferSize
                 _ = try refillBuffer(mustSucceed: true)
             }
             
-            memcpy(&bytes + pos, &buffer, size - pos)
+            memcpy(UnsafeMutablePointer(&bytes + pos), &buffer, size - pos)
             bufferPos = size - pos
             return Data(bytes:bytes, count:bytes.count)
             
@@ -160,7 +160,7 @@ public class CodedInputStream {
                     var n:Int = 0
                     if input != nil {
 //                        let pointer = UnsafeMutablePointerUInt8From(data: chunk)
-                        n = input!.read(&chunk + pos, maxLength:chunk.count - pos)
+                        n = input!.read(UnsafeMutablePointer(&chunk + pos), maxLength:chunk.count - pos)
                     }
                     guard n > 0 else {
                         throw ProtocolBuffersError.invalidProtocolBuffer("Truncated Message")
@@ -176,10 +176,10 @@ public class CodedInputStream {
             var bytes = [UInt8](repeating: 0, count: size)
 //            let byPointer =  UnsafeMutablePointerUInt8From(data: bytes)
             var pos = originalBufferSize - originalBufferPos
-            memcpy(&bytes, &buffer + originalBufferPos, pos)
+            memcpy(&bytes, UnsafeMutablePointer(&buffer + originalBufferPos), pos)
             for chunk in chunks {
 //                let chPointer =  UnsafeMutablePointerUInt8From(data: chunk)
-                memcpy(&bytes + pos, chunk, chunk.count)
+                memcpy(UnsafeMutablePointer(&bytes + pos), chunk, chunk.count)
                 pos += chunk.count
             }
             

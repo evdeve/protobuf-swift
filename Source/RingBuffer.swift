@@ -59,7 +59,7 @@ internal struct Buffer {
 //        let pointer = UnsafeMutablePointerUInt8From(data: buffer)
         if position >= tail {
             totalWritten = min(buffer.count - position, aLength)
-            memcpy(&buffer + Int(position), &inputs + Int(aOffset), Int(totalWritten))
+            memcpy(UnsafeMutablePointer(&buffer + Int(position)), UnsafeMutablePointer(&inputs + Int(aOffset)), Int(totalWritten))
 //            buffer[position..<(position+totalWritten)] = input[aOffset..<input.count]
             
 //            input.copyBytes(to: pointer + position, from: aOffset..<aOffset + totalWritten)
@@ -85,7 +85,7 @@ internal struct Buffer {
         
         let written = min(freeSpaces, aLength)
         
-        memcpy(&buffer + position, &inputs + Int(aOffset), Int(written))
+        memcpy(UnsafeMutablePointer(&buffer + position), UnsafeMutablePointer(&inputs + Int(aOffset)), Int(written))
         
 //        input.copyBytes(to: pointer + position, from: aOffset..<aOffset + written)
         position += written
@@ -100,7 +100,7 @@ internal struct Buffer {
 
         if tail > position {
             
-            let written:Int = stream.write(&buffer + tail, maxLength:buffer.count - tail)
+            let written:Int = stream.write(UnsafeMutablePointer(&buffer + tail), maxLength:buffer.count - tail)
             if written <= 0 {
                 return totalWritten
             }
@@ -112,7 +112,7 @@ internal struct Buffer {
         }
         
         if tail < position {
-            let written = stream.write(&buffer + tail, maxLength:position - tail)
+            let written = stream.write(UnsafeMutablePointer(&buffer + tail), maxLength:position - tail)
             if written <= 0 {
                 return totalWritten
             }
